@@ -11,27 +11,40 @@ var audioBlob;
 
 // 录音; 定义录音对象,wav格式
 var rec = Recorder({
-    type: "pcm",
-    bitRate: 16,
-    sampleRate: 16000,
-    onProcess: recProcess
+    type: "pcm", bitRate: 16, sampleRate: 16000, onProcess: recProcess
 });
 
 
 var sampleBuf = new Int16Array();
+
 // 定义按钮响应事件
 var btnStart = document.getElementById('btnStart');
 btnStart.onclick = record;
+
 var btnStop = document.getElementById('btnStop');
 btnStop.onclick = stop;
+
 btnStop.disabled = true;
 btnStart.disabled = true;
 
+// get configs from localStorage
+function getServerUrl() {
+    return localStorage.getItem("wsserver_url");
+}
+
+function getRequestConfigs() {
+    return localStorage.getItem("request_configs");
+}
+
+// ...
 btnConnect = document.getElementById('btnConnect');
 if (btnConnect != null) {
+    console.log('current page is original funasr index page')
     btnConnect.onclick = start;
 } else {
-    start()
+    console.log('current page is new homepage')
+
+    start(getServerUrl(), getRequestConfigs())
 }
 
 
@@ -135,11 +148,7 @@ var readWavInfo = function (bytes) {
                     n += heads[i].length;
                 }
                 return {
-                    sampleRate: sampleRate
-                    , bitRate: bitRate
-                    , numChannels: numCh
-                    , wavHead44: wavHead
-                    , dataPos: dataPos
+                    sampleRate: sampleRate, bitRate: bitRate, numChannels: numCh, wavHead44: wavHead, dataPos: dataPos
                 };
             }
         }
@@ -163,8 +172,7 @@ if (upfile != null) {
 
                 file_data_array = audioblob;
 
-                if (info_div != null)
-                    info_div.innerHTML = '请点击连接进行识别';
+                if (info_div != null) info_div.innerHTML = '请点击连接进行识别';
 
             }
 
@@ -173,24 +181,23 @@ if (upfile != null) {
             }
         }
         // for wav file, we  get the sample rate
-        if (file_ext == "wav")
-            for (let i = 0; i < len; i++) {
+        if (file_ext == "wav") for (let i = 0; i < len; i++) {
 
-                let fileAudio = new FileReader();
-                fileAudio.readAsArrayBuffer(this.files[i]);
-                fileAudio.onload = function () {
-                    audioblob = new Uint8Array(fileAudio.result);
+            let fileAudio = new FileReader();
+            fileAudio.readAsArrayBuffer(this.files[i]);
+            fileAudio.onload = function () {
+                audioblob = new Uint8Array(fileAudio.result);
 
-                    // for wav file, we can get the sample rate
-                    var info = readWavInfo(audioblob);
-                    console.log(info);
-                    file_sample_rate = info.sampleRate;
-
-
-                }
+                // for wav file, we can get the sample rate
+                var info = readWavInfo(audioblob);
+                console.log(info);
+                file_sample_rate = info.sampleRate;
 
 
             }
+
+
+        }
 
     }
 }
@@ -255,8 +262,7 @@ function on_recoder_mode_change() {
         }
         isfilemode = true;
 
-        if (info_div != null)
-            info_div.innerHTML = '请点击选择文件';
+        if (info_div != null) info_div.innerHTML = '请点击选择文件';
     }
 }
 
@@ -280,8 +286,7 @@ function getHotwords() {
         let result = item.split(" ");
         if (result.length >= 2 && regexNum.test(result[result.length - 1])) {
             var wordstr = "";
-            for (var i = 0; i < result.length - 1; i++)
-                wordstr = wordstr + result[i] + " ";
+            for (var i = 0; i < result.length - 1; i++) wordstr = wordstr + result[i] + " ";
 
             jsonresult[wordstr.trim()] = parseInt(result[result.length - 1]);
         }
@@ -304,7 +309,13 @@ function getAsrMode() {
     if (isfilemode) {
         item = "offline";
     }
-    console.log("asr mode" + item);
+    console.log("asr mode: " + item);
+
+    if (item === null) {
+        console.log('current at new homepage, get mode from localStorage.')
+        const configs = localStorage.getItem("request_configs")
+        item = configs['mode']
+    }
 
     return item;
 }
@@ -365,8 +376,7 @@ function getJsonMessage(jsonMsg) {
         play_file();
         wsconnecter.wsStop();
 
-        if (info_div != null)
-            info_div.innerHTML = "请点击连接";
+        if (info_div != null) info_div.innerHTML = "请点击连接";
 
         btnStart.disabled = true;
         btnStop.disabled = true;
@@ -377,10 +387,12 @@ function getJsonMessage(jsonMsg) {
 }
 
 // 连接状态响应
+let isServerConnected = false;
+
 function getConnState(connState) {
+
     if (connState === 0) { //on open
-
-
+        isServerConnected = true;
         if (info_div != null) {
             info_div.innerHTML = '连接成功!请点击开始';
         }
@@ -397,11 +409,15 @@ function getConnState(connState) {
                 btnConnect.disabled = true;
             }
         }
+
     } else if (connState === 1) {
         //stop();
+
     } else if (connState === 2) {
+        isServerConnected = false;
+
         stop();
-        console.log('connecttion error');
+        console.log('connection error');
 
         alert("连接地址" + document.getElementById('wssip').value + "失败,请检查asr地址和端口。或试试界面上手动授权，再连接。");
         btnStart.disabled = true;
@@ -416,8 +432,7 @@ function getConnState(connState) {
     }
 }
 
-function record() {
-
+function realStart() {
     rec.open(function () {
         rec.start();
         console.log("开始");
@@ -427,12 +442,25 @@ function record() {
             btnConnect.disabled = true;
         }
     });
+}
 
+function record() {
+    console.log("record() is called");
+
+    if (isServerConnected) {
+        realStart()
+    } else {
+        console.log("record() need reconnect server ...");
+        if (start(getServerUrl(), getRequestConfigs()) === 1) {
+            console.log('server reconnected successfully')
+            realStart()
+        }
+    }
 }
 
 
 // 识别启动、停止、清空操作
-function start() {
+function start(serverUrl, configs) {
 
     // 清除显示
     clear();
@@ -440,9 +468,10 @@ function start() {
     console.log("isfilemode" + isfilemode);
 
     //启动连接
-    var ret = wsconnecter.wsStart();
+    var ret = wsconnecter.wsStart(serverUrl, configs);
+
     // 1 is ok, 0 is error
-    if (ret == 1) {
+    if (ret === 1) {
         if (info_div != null) {
             info_div.innerHTML = "正在连接asr服务器，请等待...";
         }
@@ -454,16 +483,23 @@ function start() {
             btnConnect.disabled = true;
         }
 
+        if (serverUrl != null) {
+            realStart()
+        }
+
         return 1;
+
     } else {
         if (info_div != null) {
             info_div.innerHTML = "请点击开始";
         }
+
         btnStart.disabled = true;
         btnStop.disabled = true;
         if (btnConnect != null) {
             btnConnect.disabled = false;
         }
+
 
         return 0;
     }
@@ -471,15 +507,13 @@ function start() {
 
 
 function stop() {
-    var chunk_size = new Array(5, 10, 5);
+
+    var chunk_size = [5, 10, 5];
     var request = {
-        "chunk_size": chunk_size,
-        "wav_name": "h5",
-        "is_speaking": false,
-        "chunk_interval": 10,
-        "mode": getAsrMode(),
+        "chunk_size": chunk_size, "wav_name": "h5", "is_speaking": false, "chunk_interval": 10, "mode": getAsrMode(),
     };
     console.log(request);
+
     if (sampleBuf.length > 0) {
         wsconnecter.wsSend(sampleBuf);
         console.log("sampleBuf.length" + sampleBuf.length);
@@ -492,8 +526,7 @@ function stop() {
 
     isRec = false;
 
-    if (info_div != null)
-        info_div.innerHTML = "发送完数据,请等候,正在识别...";
+    if (info_div != null) info_div.innerHTML = "发送完数据,请等候,正在识别...";
 
     if (isfilemode == false) {
         btnStop.disabled = true;
@@ -506,6 +539,11 @@ function stop() {
         setTimeout(function () {
             console.log("call stop ws!");
             wsconnecter.wsStop();
+
+            //
+            isServerConnected = false
+            //
+
             if (btnConnect != null) {
                 btnConnect.disabled = false;
             }
@@ -519,20 +557,22 @@ function stop() {
         rec.stop(function (blob, duration) {
 
             console.log(blob);
-            var audioBlob = Recorder.pcm2wav(data = {sampleRate: 16000, bitRate: 16, blob: blob},
-                function (theblob, duration) {
-                    console.log(theblob);
-                    var audio_record = document.getElementById('audio_record');
+            var audioBlob = Recorder.pcm2wav(data = {
+                sampleRate: 16000,
+                bitRate: 16,
+                blob: blob
+            }, function (theblob, duration) {
+                console.log(theblob);
+                var audio_record = document.getElementById('audio_record');
 
-                    if (audio_record != null) {
-                        audio_record.src = (window.URL || webkitURL).createObjectURL(theblob);
-                        audio_record.controls = true;
-                        //audio_record.play();
-                    }
-                }, function (msg) {
-                    console.log(msg);
+                if (audio_record != null) {
+                    audio_record.src = (window.URL || webkitURL).createObjectURL(theblob);
+                    audio_record.controls = true;
+                    //audio_record.play();
                 }
-            );
+            }, function (msg) {
+                console.log(msg);
+            });
 
         }, function (errMsg) {
             console.log("errMsg: " + errMsg);
@@ -562,8 +602,7 @@ function recProcess(buffer, powerLevel, bufferDuration, bufferSampleRate, newBuf
         sampleBuf = Int16Array.from([...sampleBuf, ...data_16k]);
         var chunk_size = 960; // for asr chunk_size [5, 10, 5]
 
-        if (info_div != null)
-            info_div.innerHTML = "" + bufferDuration / 1000 + "s";
+        if (info_div != null) info_div.innerHTML = "" + bufferDuration / 1000 + "s";
 
         while (sampleBuf.length >= chunk_size) {
             sendBuf = sampleBuf.slice(0, chunk_size);
