@@ -8,9 +8,23 @@
 </head>
 
 <body style="margin-left: 3%">
+<script src="recorder-core.js" charset="UTF-8"></script>
+<script src="wav.js" charset="UTF-8"></script>
+<script src="pcm.js" charset="UTF-8"></script>
 
 <div class="bg-white">
 
+    <!-- hidden tag: configs -->
+    <div style="display: none">
+        <label for="wssip"></label>
+        <input disabled id="wssip" value="ws://172.27.112.3:10095">
+        <div id="info_div"></div>
+        <label for="varHot"></label>
+        <textarea rows="3" id="varHot" style=" width: 100%;height:100%">阿里巴巴 20&#13;hello world 40</textarea>
+        <label><input name="asr_mode" type="radio" value="2pass" checked="true"/>2pass </label>
+    </div>
+
+    <!-- main content -->
     <div class="relative isolate px-6 pt-14 lg:px-8">
         <div class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
              aria-hidden="true">
@@ -52,7 +66,8 @@
                                 </div>
                             </label>
                         </li>
-                        <li>
+
+                        <li id="btnStop">
                             <input disabled type="checkbox" id="flowbite-option" value="" class="hidden peer">
                             <label for="flowbite-option"
                                    class="inline-flex items-center justify-between w-full p-5 text-gray-500 bg-white border-2 border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:border-blue-600 hover:text-gray-600 dark:peer-checked:text-gray-300 peer-checked:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
@@ -66,7 +81,8 @@
                                 </div>
                             </label>
                         </li>
-                        <li>
+
+                        <li id="btnStart">
                             <input disabled type="checkbox" id="angular-option" value="" class="hidden peer">
                             <label for="angular-option"
                                    class="inline-flex items-center justify-between w-full p-5 text-gray-500 bg-white border-2 border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:border-blue-600 hover:text-gray-600 dark:peer-checked:text-gray-300 peer-checked:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
@@ -106,6 +122,8 @@
     </div>
 </div>
 
+<script src="wsconnecter.js" charset="utf-8"></script>
+<script src="main.js" charset="utf-8"></script>
 <script src="homepage.js" charset="UTF-8"></script>
 </body>
 
