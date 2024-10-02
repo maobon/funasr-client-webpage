@@ -41,10 +41,12 @@ btnConnect = document.getElementById('btnConnect');
 if (btnConnect != null) {
     console.log('current page is original funasr index page')
     btnConnect.onclick = start;
+
 } else {
     console.log('current page is new homepage')
 
-    start(getServerUrl(), getRequestConfigs())
+    if (localStorage.getItem('auto') === 'true')
+        start(getServerUrl(), getRequestConfigs())
 }
 
 
@@ -75,18 +77,15 @@ var totalsend = 0;
 
 // addresschange();
 
-function addresschange() {
-
-    var Uri = document.getElementById('wssip').value;
-    document.getElementById('info_wslink').innerHTML = "点此处手工授权（IOS手机）";
-    Uri = Uri.replace(/wss/g, "https");
-    console.log("addresschange uri=", Uri);
-
-    awsslink.onclick = function () {
-        window.open(Uri, '_blank');
-    }
-
-}
+// function addresschange() {
+//     var Uri = document.getElementById('wssip').value;
+//     document.getElementById('info_wslink').innerHTML = "点此处手工授权（IOS手机）";
+//     Uri = Uri.replace(/wss/g, "https");
+//     console.log("addresschange uri=", Uri);
+//     awsslink.onclick = function () {
+//         window.open(Uri, '_blank');
+//     }
+// }
 
 if (upfile != null) {
     upfile.onclick = function () {
@@ -110,7 +109,7 @@ var readWavInfo = function (bytes) {
     var wavView = bytes;
     var eq = function (p, s) {
         for (var i = 0; i < s.length; i++) {
-            if (wavView[p + i] != s.charCodeAt(i)) {
+            if (wavView[p + i] !== s.charCodeAt(i)) {
                 return false;
             }
         }
@@ -120,14 +119,15 @@ var readWavInfo = function (bytes) {
     if (eq(0, "RIFF") && eq(8, "WAVEfmt ")) {
 
         var numCh = wavView[22];
-        if (wavView[20] == 1 && (numCh == 1 || numCh == 2)) {//raw pcm 单或双声道
+        if (wavView[20] === 1 && (numCh === 1 || numCh === 2)) {//raw pcm 单或双声道
             var sampleRate = wavView[24] + (wavView[25] << 8) + (wavView[26] << 16) + (wavView[27] << 24);
             var bitRate = wavView[34] + (wavView[35] << 8);
             var heads = [wavView.subarray(0, 12)], headSize = 12;//head只保留必要的块
             //搜索data块的位置
             var dataPos = 0; // 44 或有更多块
             for (var i = 12, iL = wavView.length - 8; i < iL;) {
-                if (wavView[i] == 100 && wavView[i + 1] == 97 && wavView[i + 2] == 116 && wavView[i + 3] == 97) {//eq(i,"data")
+                if (wavView[i] === 100 && wavView[i + 1] === 97 && wavView[i + 2] === 116 && wavView[i + 3] === 97) {
+                    //eq(i,"data")
                     heads.push(wavView.subarray(i, i + 8));
                     headSize += 8;
                     dataPos = i + 8;
@@ -136,7 +136,8 @@ var readWavInfo = function (bytes) {
                 var i0 = i;
                 i += 4;
                 i += 4 + wavView[i] + (wavView[i + 1] << 8) + (wavView[i + 2] << 16) + (wavView[i + 3] << 24);
-                if (i0 == 12) {//fmt
+                if (i0 === 12) {
+                    //fmt
                     heads.push(wavView.subarray(i0, i));
                     headSize += i - i0;
                 }
@@ -180,8 +181,9 @@ if (upfile != null) {
                 console.log('error' + e);
             }
         }
+
         // for wav file, we  get the sample rate
-        if (file_ext == "wav") for (let i = 0; i < len; i++) {
+        if (file_ext === "wav") for (let i = 0; i < len; i++) {
 
             let fileAudio = new FileReader();
             fileAudio.readAsArrayBuffer(this.files[i]);
@@ -192,13 +194,8 @@ if (upfile != null) {
                 var info = readWavInfo(audioblob);
                 console.log(info);
                 file_sample_rate = info.sampleRate;
-
-
             }
-
-
         }
-
     }
 }
 
@@ -218,17 +215,14 @@ function start_file_send() {
     var chunk_size = 960; // for asr chunk_size [5, 10, 5]
 
     while (sampleBuf.length >= chunk_size) {
-
         sendBuf = sampleBuf.slice(0, chunk_size);
         totalsend = totalsend + sampleBuf.length;
         sampleBuf = sampleBuf.slice(chunk_size, sampleBuf.length);
         wsconnecter.wsSend(sendBuf);
-
-
     }
+
     stop();
 }
-
 
 function on_recoder_mode_change() {
     var item = null;
@@ -323,7 +317,7 @@ function getAsrMode() {
 function handleWithTimestamp(tmptext, tmptime) {
     console.log("tmptext: " + tmptext);
     console.log("tmptime: " + tmptime);
-    if (tmptime == null || tmptime == "undefined" || tmptext.length <= 0) {
+    if (tmptime == null || tmptime === "undefined" || tmptext.length <= 0) {
         return tmptext;
     }
     tmptext = tmptext.replace(/。|？|，|、|\?|\.|\ /g, ","); // in case there are a lot of "。"
@@ -332,7 +326,7 @@ function handleWithTimestamp(tmptext, tmptime) {
     var char_index = 0; // index for timestamp
     var text_withtime = "";
     for (var i = 0; i < words.length; i++) {
-        if (words[i] == "undefined" || words[i].length <= 0) {
+        if (words[i] === "undefined" || words[i].length <= 0) {
             continue;
         }
         console.log("words===", words[i]);
@@ -359,7 +353,7 @@ function getJsonMessage(jsonMsg) {
     var asrmodel = JSON.parse(jsonMsg.data)['mode'];
     var is_final = JSON.parse(jsonMsg.data)['is_final'];
     var timestamp = JSON.parse(jsonMsg.data)['timestamp'];
-    if (asrmodel == "2pass-offline" || asrmodel == "offline") {
+    if (asrmodel === "2pass-offline" || asrmodel === "offline") {
 
         offline_text = offline_text + handleWithTimestamp(rectxt, timestamp); //rectxt; //.replace(/ +/g,"");
         rec_text = offline_text;
@@ -371,7 +365,7 @@ function getJsonMessage(jsonMsg) {
     varArea.value = rec_text;
     console.log("offline_text: " + asrmodel + "," + offline_text);
     console.log("rec_text: " + rec_text);
-    if (isfilemode == true && is_final == true) {
+    if (isfilemode && is_final) {
         console.log("call stop ws!");
         play_file();
         wsconnecter.wsStop();
@@ -393,11 +387,12 @@ function getConnState(connState) {
 
     if (connState === 0) { //on open
         isServerConnected = true;
+
         if (info_div != null) {
             info_div.innerHTML = '连接成功!请点击开始';
         }
 
-        if (isfilemode == true) {
+        if (isfilemode) {
             if (info_div != null) {
                 info_div.innerHTML = '请耐心等待,大文件等待时间更长';
             }
@@ -433,6 +428,8 @@ function getConnState(connState) {
 }
 
 function realStart() {
+    console.log('realStart .... realStart ...')
+
     rec.open(function () {
         rec.start();
         console.log("开始");
@@ -451,10 +448,7 @@ function record() {
         realStart()
     } else {
         console.log("record() need reconnect server ...");
-        if (start(getServerUrl(), getRequestConfigs()) === 1) {
-            console.log('server reconnected successfully')
-            realStart()
-        }
+        start(getServerUrl(), getRequestConfigs())
     }
 }
 
@@ -464,7 +458,8 @@ function start(serverUrl, configs) {
 
     // 清除显示
     clear();
-    //控件状态更新
+
+    // 控件状态更新
     console.log("isfilemode" + isfilemode);
 
     //启动连接
@@ -528,7 +523,7 @@ function stop() {
 
     if (info_div != null) info_div.innerHTML = "发送完数据,请等候,正在识别...";
 
-    if (isfilemode == false) {
+    if (isfilemode === false) {
         btnStop.disabled = true;
         btnStart.disabled = true;
         if (btnConnect != null) {

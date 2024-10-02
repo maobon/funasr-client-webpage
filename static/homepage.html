@@ -15,23 +15,8 @@
 
 <div class="bg-white">
 
-    <!-- hidden tag: configs -->
     <div style="display: none">
-
-        <!--
-        <label for="wssip"></label>
-        <input disabled id="wssip" value="ws://172.27.112.3:10095">
-        -->
-
         <div id="info_div"></div>
-
-        <!--
-        <label for="varHot"></label>
-        <textarea rows="3" id="varHot" style=" width: 100%;height:100%">阿里巴巴 20&#13;hello world 40</textarea>
-        <label><input name="asr_mode" type="radio" value="2pass" checked="true"/>2pass </label>
-        -->
-
-
         <label for="varArea"></label>
         <textarea rows="10" id="varArea" readonly="readonly" style=" width: 100%;height:100%"></textarea>
     </div>
@@ -45,25 +30,20 @@
         </div>
 
         <div class="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-            <div class="hidden sm:mb-8 sm:flex sm:justify-center">
-                <div class="relative rounded-full px-3 py-1 text-sm leading-6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20">
-                    Announcing our next round of funding. <a href="#" class="font-semibold text-indigo-600"><span
-                        class="absolute inset-0" aria-hidden="true"></span>Read more <span
-                        aria-hidden="true">&rarr;</span></a>
-                </div>
-            </div>
-
             <div class="text-center">
                 <h1 class="text-balance tracking-tight text-gray-500 sm:text-4xl">
                     无界创羿生成式AI语音捕捉模块
                 </h1>
                 <p class="mt-6 text-lg leading-8 text-gray-600">
-                    Anim aute id magna aliqua ad ad non deserunt sunt. Qui
-                    irure qui lorem cupidatat commodo. Elit sunt amet fugiat veniam occaecat fugiat aliqua.
+                    By supporting the training and finetuning of the industrial-grade speech recognition model,
+                    researchers and developers can conduct research and production of speech recognition models more
+                    conveniently, and promote the development of speech recognition ecology.
                 </p>
 
                 <div class="mt-10 flex items-center justify-center gap-x-6">
                     <ul class="grid w-full gap-6 md:grid-cols-3">
+
+                        <!-- start record button -->
                         <li id="btn_start_record">
                             <input disabled type="checkbox" id="react-option" value="" class="hidden peer" required="">
                             <label for="react-option"
@@ -79,6 +59,7 @@
                             </label>
                         </li>
 
+                        <!-- stop record button -->
                         <li id="btnStop">
                             <input disabled type="checkbox" id="flowbite-option" value="" class="hidden peer">
                             <label for="flowbite-option"
@@ -94,6 +75,7 @@
                             </label>
                         </li>
 
+                        <!-- test -->
                         <li id="btnStart">
                             <input disabled type="checkbox" id="angular-option" value="" class="hidden peer">
                             <label for="angular-option"
@@ -113,13 +95,15 @@
             </div>
 
             <div>
-                <div style="width: 20%; float: right;">
+                <div style="width: 35%; float: right;">
                     <div class="flex items-center ps-4">
                         <input id="bordered-checkbox-1" type="checkbox" value="" name="bordered-checkbox"
+                               autocomplete="off"
                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                         <label for="bordered-checkbox-1"
-                               class="w-full py-4 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Default
-                            radio</label>
+                               class="w-full py-4 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                            选中后，每次启动自动开始录音
+                        </label>
                     </div>
                 </div>
             </div>

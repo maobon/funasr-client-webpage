@@ -17,7 +17,14 @@ function WebSocketConnectMethod(config) { //定义socket连接方法类
     this.wsStart = function (serverUrl, configs) {
 
         if (configs == null) {
-            var Uri = document.getElementById('wssip').value; //"wss://111.205.137.58:5821/wss/" //设置wss asr online接口地址 如 wss://X.X.X.X:port/wss/
+            const wssipElement = document.getElementById('wssip')
+            if(wssipElement == null){
+                alert("请点击开始录音进行配置");
+                return 0
+            }
+
+            //"wss://111.205.137.58:5821/wss/" //设置wss asr online接口地址 如 wss://X.X.X.X:port/wss/
+            const Uri = wssipElement.value;
             if (Uri.match(/wss:\S*|ws:\S*/)) {
                 console.log("Uri" + Uri);
                 serverUrl = Uri
@@ -31,13 +38,16 @@ function WebSocketConnectMethod(config) { //定义socket连接方法类
         console.log('requesting configs: ' + configs)
 
         if ('WebSocket' in window) {
-            speechSokt = new WebSocket(serverUrl); // 定义socket连接对象
+            // 定义socket连接对象
+            speechSokt = new WebSocket(serverUrl);
+
+            // 定义响应函数
             speechSokt.onopen = function (e) {
                 onOpen(e, configs);
-            }; // 定义响应函数
+            };
             speechSokt.onclose = function (e) {
                 console.log("onclose ws!");
-                //speechSokt.close();
+                // speechSokt.close();
                 onClose(e);
             };
             speechSokt.onmessage = function (e) {
@@ -68,9 +78,8 @@ function WebSocketConnectMethod(config) { //定义socket连接方法类
         }
     };
 
-    // SOCEKT连接中的消息与状态响应
+    // SOCKET 连接中的消息与状态响应
     function onOpen(e, request) {
-        // 发送json
 
         if (request == null) {
             const chunk_size = [5, 10, 5];
@@ -105,8 +114,10 @@ function WebSocketConnectMethod(config) { //定义socket连接方法类
         stateHandle(0);
 
         // save configs into localStorage
+        localStorage.setItem("wsserver_url", speechSokt.url)
         localStorage.setItem("request_configs", request)
-        console.log("request_configs saved ...")
+
+        console.log("request_configs saved ...!!")
     }
 
     function onClose(e) {
