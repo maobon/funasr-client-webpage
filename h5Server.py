@@ -5,25 +5,31 @@
 ###
 ### 2022-2023 by zhaoming,mali aihealthx.com
 
-
-from flask import Flask, render_template, request, send_from_directory, jsonify, redirect, url_for
+from flask import Flask, redirect, jsonify, request
+from broadcast import send_udp_broadcast
+import argparse
 
 # from gevent.pywsgi import WSGIServer
 
-import datetime
-import random
-import string
-import time
-import argparse
-
-
-app = Flask(__name__, static_folder="static", static_url_path="/static")
+app = Flask(__name__, static_folder="src", static_url_path="/src")
 
 
 @app.route("/")
-def homePage():
-    return redirect("/static/homepage.html")
+def homepage():
+    return redirect("/src/homepage.html")
 
+# server for webpage client send message to this server
+# broadcast received message UDP
+@app.route('/post_endpoint', methods=['POST'])
+def post_endpoint():
+    data = request.json
+    # 处理data，例如存储数据、计算结果等
+    print(f'received data: {data}')
+    send_udp_broadcast(data)
+
+    # 返回响应
+    return 'Data received', 200
+# -------------
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -39,7 +45,7 @@ parser.add_argument(
     "--keyfile", type=str, default="./ssl_key/server.key", required=False, help="keyfile for ssl"
 )
 
-# ws://172.27.112.3:10095/
+
 if __name__ == "__main__":
     args = parser.parse_args()
     port = args.port
@@ -60,5 +66,5 @@ if __name__ == "__main__":
         threaded=True,
         host=args.host,
         port=port,
-    #    ssl_context=(args.certfile, args.keyfile),
+        #    ssl_context=(args.certfile, args.keyfile),
     )

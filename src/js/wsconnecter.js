@@ -5,10 +5,14 @@
 
 /* 2021-2023 by zhaoming,mali aihealthx.com */
 
-function WebSocketConnectMethod(config) { //定义socket连接方法类
+
+import {getAsrMode, getHotwords, getUseITN} from "./main.js";
+
+export function WebSocketConnectMethod(config) { //定义socket连接方法类
 
     var speechSokt;
     var connKeeperID;
+    var isfilemode = false;
 
     // functions
     var msgHandle = config.msgHandle;
@@ -92,6 +96,7 @@ function WebSocketConnectMethod(config) { //定义socket连接方法类
                 "mode": getAsrMode(),
 
             };
+
             if (isfilemode) {
                 requestObj.wav_format = file_ext;
                 if (file_ext === "wav") {

@@ -3,7 +3,11 @@
  * Reserved. MIT License  (https://opensource.org/licenses/MIT)
  */
 /* 2022-2023 by zhaoming,mali aihealthx.com */
+import './axios.min.js';
+import {WebSocketConnectMethod} from "./wsconnecter.js";
 
+var isRec = false;
+var sendBuf;
 
 // 连接; 定义socket连接类对象与语音对象
 var wsconnecter = new WebSocketConnectMethod({msgHandle: getJsonMessage, stateHandle: getConnState});
@@ -37,7 +41,7 @@ function getRequestConfigs() {
 }
 
 // ...
-btnConnect = document.getElementById('btnConnect');
+var btnConnect = document.getElementById('btnConnect');
 if (btnConnect != null) {
     console.log('current page is original funasr index page')
     btnConnect.onclick = start;
@@ -97,7 +101,6 @@ if (upfile != null) {
         }
     }
 }
-
 
 // from https://github.com/xiangyuecn/Recorder/tree/master
 var readWavInfo = function (bytes) {
@@ -260,8 +263,7 @@ function on_recoder_mode_change() {
     }
 }
 
-
-function getHotwords() {
+export function getHotwords() {
 
     var obj = document.getElementById("varHot");
 
@@ -275,6 +277,7 @@ function getHotwords() {
     let items = val.split(/[(\r\n)\r\n]+/);  //split by \r\n
     var jsonresult = {};
     const regexNum = /^[0-9]*$/; // test number
+    let item;
     for (item of items) {
 
         let result = item.split(" ");
@@ -290,7 +293,7 @@ function getHotwords() {
 
 }
 
-function getAsrMode() {
+export function getAsrMode() {
 
     var item = null;
     var obj = document.getElementsByName("asr_mode");
@@ -361,10 +364,14 @@ function getJsonMessage(jsonMsg) {
         rec_text = rec_text + rectxt; //.replace(/ +/g,"");
     }
     var varArea = document.getElementById('varArea');
-
     varArea.value = rec_text;
+
     console.log("offline_text: " + asrmodel + "," + offline_text);
     console.log("rec_text: " + rec_text);
+
+    // send broadcast message
+    sendServerRespMessage(rec_text)
+
     if (isfilemode && is_final) {
         console.log("call stop ws!");
         play_file();
@@ -386,8 +393,6 @@ let isServerConnected = false;
 function getConnState(connState) {
 
     if (connState === 0) { //on open
-        isServerConnected = true;
-
         if (info_div != null) {
             info_div.innerHTML = '连接成功!请点击开始';
         }
@@ -405,12 +410,12 @@ function getConnState(connState) {
             }
         }
 
+        isServerConnected = true;
+
     } else if (connState === 1) {
         //stop();
 
     } else if (connState === 2) {
-        isServerConnected = false;
-
         stop();
         console.log('connection error');
 
@@ -424,6 +429,8 @@ function getConnState(connState) {
         if (info_div != null) {
             info_div.innerHTML = '请点击连接';
         }
+
+        isServerConnected = false;
     }
 }
 
@@ -552,22 +559,25 @@ function stop() {
         rec.stop(function (blob, duration) {
 
             console.log(blob);
-            var audioBlob = Recorder.pcm2wav(data = {
-                sampleRate: 16000,
-                bitRate: 16,
-                blob: blob
-            }, function (theblob, duration) {
-                console.log(theblob);
-                var audio_record = document.getElementById('audio_record');
+            var audioBlob = Recorder.pcm2wav(
+                {
+                    sampleRate: 16000,
+                    bitRate: 16,
+                    blob: blob
+                },
+                function (theblob, duration) {
+                    console.log(theblob);
+                    var audio_record = document.getElementById('audio_record');
 
-                if (audio_record != null) {
-                    audio_record.src = (window.URL || webkitURL).createObjectURL(theblob);
-                    audio_record.controls = true;
-                    //audio_record.play();
-                }
-            }, function (msg) {
-                console.log(msg);
-            });
+                    if (audio_record != null) {
+                        audio_record.src = (window.URL || webkitURL).createObjectURL(theblob);
+                        audio_record.controls = true;
+                        //audio_record.play();
+                    }
+                },
+                function (msg) {
+                    console.log(msg);
+                });
 
         }, function (errMsg) {
             console.log("errMsg: " + errMsg);
@@ -607,7 +617,7 @@ function recProcess(buffer, powerLevel, bufferDuration, bufferSampleRate, newBuf
     }
 }
 
-function getUseITN() {
+export function getUseITN() {
     var obj = document.getElementsByName("use_itn");
     for (var i = 0; i < obj.length; i++) {
         if (obj[i].checked) {
@@ -615,4 +625,20 @@ function getUseITN() {
         }
     }
     return false;
+}
+
+// send to 9000 port
+function sendServerRespMessage(message) {
+    const url = 'http://127.0.0.1:1337/post_endpoint';
+    const postData = {
+        "data": message
+    };
+
+    axios.post(url, postData)
+        .then(response => {
+            console.log('Response data:', response.data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
 }

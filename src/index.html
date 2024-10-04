@@ -8,9 +8,10 @@
 </head>
 
 <body style="margin-left: 3%">
-<script src="javascript/recorder-core.js" charset="UTF-8"></script>
-<script src="javascript/wav.js" charset="UTF-8"></script>
-<script src="javascript/pcm.js" charset="UTF-8"></script>
+
+<script src="js/recorder-core.js"></script>
+<script src="js/wav.js"></script>
+<script src="js/pcm.js"></script>
 
 <h2>无界创羿生成式AI语音捕捉模块</h2>
 <h3>集成了VAD、ASR与标点等工业级别的模型，支持长音频离线文件转写，实时语音识别等</h3>
@@ -21,8 +22,11 @@
         asr服务器地址(必填):
         <br>
 
-        <input id="wssip" type="text" onchange="addresschange()" style=" width: 100%;height:100%"
-               value="ws://172.27.112.3:10095"/>
+        <label for="wssip">
+            <input id="wssip" type="text" onchange="addresschange()"
+                   style=" width: 100%;height:100%"
+                   value="ws://172.27.112.3:10095"/>
+        </label>
         <br>
         <br>
 
@@ -35,23 +39,21 @@
         <div style="border:2px solid #ccc;">
             选择录音模式:
             <br/>
-
             <label>
                 <input name="recoder_mode" onclick="on_recoder_mode_change()" type="radio" value="mic"
-                       checked="true"/>麦克风
+                       checked="checked"/>麦克风
             </label>&nbsp;&nbsp;
 
             <label>
                 <input name="recoder_mode" onclick="on_recoder_mode_change()" type="radio" value="file"/>文件
             </label>
-
         </div>
 
         <br>
         <div id="mic_mode_div" style="border:2px solid #ccc;display:block;">
             选择asr模型模式:<br/>
 
-            <label><input name="asr_mode" type="radio" value="2pass" checked="true"/>2pass </label>&nbsp;&nbsp;
+            <label><input name="asr_mode" type="radio" value="2pass" checked="checked"/>2pass </label>&nbsp;&nbsp;
             <label><input name="asr_mode" type="radio" value="online"/>online </label>&nbsp;&nbsp;
             <label><input name="asr_mode" type="radio" value="offline"/>offline </label>
         </div>
@@ -63,21 +65,27 @@
 
         <div id="use_itn_div" style="border:2px solid #ccc;display:block;">
             逆文本标准化(ITN):<br/>
-            <label><input name="use_itn" type="radio" value="false" checked="true"/>否 </label>&nbsp;&nbsp;
+            <label><input name="use_itn" type="radio" value="false" checked="checked"/>否 </label>&nbsp;&nbsp;
             <label><input name="use_itn" type="radio" value="true"/>是 </label>
         </div>
         <br>
         <div style="border:2px solid #ccc;">
             热词设置(一行一个关键字，空格隔开权重,如"阿里巴巴 20")：
             <br>
-            <textarea rows="3" id="varHot" style=" width: 100%;height:100%">阿里巴巴 20&#13;hello world 40</textarea>
+            <label for="varHot">
+                <textarea rows="3" id="varHot"
+                          style=" width: 100%;height:100%">阿里巴巴 20&#13;hello world 40</textarea>
+            </label>
             <br>
         </div>
         语音识别结果显示：
         <br>
 
-        <textarea rows="10" id="varArea" readonly="true" style=" width: 100%;height:100%"></textarea>
+        <label for="varArea">
+            <textarea rows="10" id="varArea" readonly="readonly" style=" width: 100%;height:100%"></textarea>
+        </label>
         <br>
+
         <div id="info_div">请点击开始</div>
         <div class="div_class_buttons">
             <button id="btnConnect">连接</button>
@@ -89,8 +97,10 @@
     </div>
 </div>
 
-<script src="javascript/wsconnecter.js" charset="utf-8"></script>
-<script src="javascript/main.js" charset="utf-8"></script>
+<script type="module" src="js/main.js"></script>
+<script type="module" src="js/wsconnecter.js"></script>
+
+<script type="module" src="js/axios.min.js"></script>
 
 </body>
 </html>
