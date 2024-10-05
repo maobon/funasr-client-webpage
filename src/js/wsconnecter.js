@@ -22,6 +22,7 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
 
         if (configs == null) {
             const wssipElement = document.getElementById('wssip')
+
             if(wssipElement == null){
                 alert("请点击开始录音进行配置");
                 return 0

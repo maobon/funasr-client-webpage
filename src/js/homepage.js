@@ -2,10 +2,15 @@
  * homepage.js
  */
 
-// start button
-const btn_start_record = document.getElementById('btn_start_record');
-btn_start_record.addEventListener('click', () => {
+const btn_go_index = document.getElementById('btn_go_index');
+btn_go_index.addEventListener('click', () => {
     window.location.href = 'index.html';
+})
+
+// settings button
+const btn_settings = document.getElementById('btnSettings');
+btn_settings.addEventListener('click', () => {
+    window.location.href = 'settings.html';
 })
 
 // auto record checkbox

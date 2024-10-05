@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>无界创羿</title>
+    <link rel="shortcut icon" href="public/image/favicon.ico">
+</head>
+
+<body style="margin-left: 3%">
+
+<h2>配置界面</h2>
+
+<div class="div_class_topArea">
+
+    <div class="div_class_recordControl">
+        asr服务器地址(必填):
+        <br>
+
+        <label for="wssip">
+            <input id="wssip" type="text" onchange="addresschange()"
+                   style=" width: 100%;height:100%"
+                   value="ws://172.27.112.3:10095"/>
+        </label>
+        <br>
+        <br>
+
+        <div style="border:2px solid #ccc;">
+            选择录音模式:
+            <br/>
+            <label>
+                <input name="recoder_mode" onclick="on_recoder_mode_change()" type="radio" value="mic"
+                       checked="checked"/>麦克风
+            </label>&nbsp;&nbsp;
+
+            <label>
+                <input name="recoder_mode" onclick="on_recoder_mode_change()" type="radio" value="file"/>文件
+            </label>
+        </div>
+
+        <br>
+        <div id="mic_mode_div" style="border:2px solid #ccc;display:block;">
+            选择asr模型模式:<br/>
+
+            <label><input name="asr_mode" type="radio" value="2pass" checked="checked"/>2pass </label>&nbsp;&nbsp;
+            <label><input name="asr_mode" type="radio" value="online"/>online </label>&nbsp;&nbsp;
+            <label><input name="asr_mode" type="radio" value="offline"/>offline </label>
+        </div>
+
+        <div id="rec_mode_div" style="border:2px solid #ccc;display:none;">
+            <input type="file" id="upfile">
+        </div>
+        <br>
+
+        <div id="use_itn_div" style="border:2px solid #ccc;display:block;">
+            逆文本标准化(ITN):<br/>
+            <label><input name="use_itn" type="radio" value="false" checked="checked"/>否 </label>&nbsp;&nbsp;
+            <label><input name="use_itn" type="radio" value="true"/>是 </label>
+        </div>
+        <br>
+        <div style="border:2px solid #ccc;">
+            热词设置(一行一个关键字，空格隔开权重,如"阿里巴巴 20")：
+            <br>
+            <label for="varHot">
+                <textarea rows="3" id="varHot"
+                          style=" width: 100%;height:100%">阿里巴巴 20&#13;hello world 40</textarea>
+            </label>
+            <br>
+        </div>
+
+        <div class="div_class_buttons">
+            <button id="btnStart">开始</button>
+            <button id="btnStop">停止</button>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

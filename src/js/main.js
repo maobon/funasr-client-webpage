@@ -40,11 +40,12 @@ function getRequestConfigs() {
     return localStorage.getItem("request_configs");
 }
 
-// ...
-var btnConnect = document.getElementById('btnConnect');
+// ... main logic ...
+const btnConnect = document.getElementById('btnConnect');
 if (btnConnect != null) {
     console.log('current page is original funasr index page')
     btnConnect.onclick = start;
+    btnConnect.click()
 
 } else {
     console.log('current page is new homepage')
@@ -52,7 +53,7 @@ if (btnConnect != null) {
     if (localStorage.getItem('auto') === 'true')
         start(getServerUrl(), getRequestConfigs())
 }
-
+// ... main logic .......
 
 var awsslink = document.getElementById('wsslink');
 

@@ -21,6 +21,7 @@
         <div id="info_div"></div>
         <label for="varArea"></label>
         <textarea rows="10" id="varArea" readonly="readonly" style=" width: 100%;height:100%"></textarea>
+        <button id="btnStart"></button>
     </div>
 
     <!-- main content -->
@@ -45,8 +46,8 @@
                 <div class="mt-10 flex items-center justify-center gap-x-6">
                     <ul class="grid w-full gap-6 md:grid-cols-3">
 
-                        <!-- start record button -->
-                        <li id="btn_start_record">
+                        <!-- start record -->
+                        <li id="btn_go_index">
                             <input disabled type="checkbox" id="react-option" value="" class="hidden peer" required="">
                             <label for="react-option"
                                    class="inline-flex items-center justify-between w-full p-5 text-gray-500 bg-white border-2 border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:border-blue-600 hover:text-gray-600 dark:peer-checked:text-gray-300 peer-checked:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
@@ -61,7 +62,7 @@
                             </label>
                         </li>
 
-                        <!-- stop record button -->
+                        <!-- stop record -->
                         <li id="btnStop">
                             <input disabled type="checkbox" id="flowbite-option" value="" class="hidden peer">
                             <label for="flowbite-option"
@@ -77,8 +78,8 @@
                             </label>
                         </li>
 
-                        <!-- test -->
-                        <li id="btnStart">
+                        <!-- settings -->
+                        <li id="btnSettings">
                             <input disabled type="checkbox" id="angular-option" value="" class="hidden peer">
                             <label for="angular-option"
                                    class="inline-flex items-center justify-between w-full p-5 text-gray-500 bg-white border-2 border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:border-blue-600 hover:text-gray-600 dark:peer-checked:text-gray-300 peer-checked:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
