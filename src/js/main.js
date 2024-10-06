@@ -10,7 +10,10 @@ var isRec = false;
 var sendBuf;
 
 // 连接; 定义socket连接类对象与语音对象
-var wsconnecter = new WebSocketConnectMethod({msgHandle: getJsonMessage, stateHandle: getConnState});
+var wsconnecter = new WebSocketConnectMethod({
+    msgHandle: getJsonMessage,
+    stateHandle: getConnState
+});
 var audioBlob;
 
 // 录音; 定义录音对象,wav格式
@@ -22,14 +25,15 @@ var rec = Recorder({
 var sampleBuf = new Int16Array();
 
 // 定义按钮响应事件
-var btnStart = document.getElementById('btnStart');
-btnStart.onclick = record;
+const startButton = document.getElementById('btnStart');
+startButton.onclick = function () {
+    if (start() === 1) {
+        record()
+    }
+};
 
-var btnStop = document.getElementById('btnStop');
-btnStop.onclick = stop;
-
-btnStop.disabled = true;
-btnStart.disabled = true;
+const stopButton = document.getElementById('btnStop');
+stopButton.onclick = stop;
 
 // get configs from localStorage
 function getServerUrl() {
@@ -37,22 +41,28 @@ function getServerUrl() {
 }
 
 function getRequestConfigs() {
-    return localStorage.getItem("request_configs");
+    console.log("get request configs from localStorage");
+    let configs = localStorage.getItem("request_configs");
+    console.log("stashed configs:" + configs);
+    return configs;
 }
 
 // ... main logic ...
 const btnConnect = document.getElementById('btnConnect');
 if (btnConnect != null) {
     console.log('current page is original funasr index page')
-    btnConnect.onclick = start;
-    btnConnect.click()
-
+    if (start() === 1) {
+        record()
+    }
 } else {
     console.log('current page is new homepage')
-
-    if (localStorage.getItem('auto') === 'true')
-        start(getServerUrl(), getRequestConfigs())
+    if (localStorage.getItem('auto') === 'true') {
+        if (start() === 1) {
+            record()
+        }
+    }
 }
+
 // ... main logic .......
 
 var awsslink = document.getElementById('wsslink');
@@ -72,36 +82,6 @@ var file_data_array;  // array to save file data
 
 var totalsend = 0;
 
-
-// var now_ipaddress = window.location.href;
-// now_ipaddress = now_ipaddress.replace("https://", "wss://");
-// now_ipaddress = now_ipaddress.replace("static/index.html", "");
-// var localport = window.location.port;
-// now_ipaddress = now_ipaddress.replace(localport, "10095");
-// document.getElementById('wssip').value = now_ipaddress;
-
-// addresschange();
-
-// function addresschange() {
-//     var Uri = document.getElementById('wssip').value;
-//     document.getElementById('info_wslink').innerHTML = "点此处手工授权（IOS手机）";
-//     Uri = Uri.replace(/wss/g, "https");
-//     console.log("addresschange uri=", Uri);
-//     awsslink.onclick = function () {
-//         window.open(Uri, '_blank');
-//     }
-// }
-
-if (upfile != null) {
-    upfile.onclick = function () {
-        btnStart.disabled = true;
-        btnStop.disabled = true;
-
-        if (btnConnect != null) {
-            btnConnect.disabled = false;
-        }
-    }
-}
 
 // from https://github.com/xiangyuecn/Recorder/tree/master
 var readWavInfo = function (bytes) {
@@ -228,42 +208,6 @@ function start_file_send() {
     stop();
 }
 
-function on_recoder_mode_change() {
-    var item = null;
-    var obj = document.getElementsByName("recoder_mode");
-    for (var i = 0; i < obj.length; i++) { //遍历Radio
-        if (obj[i].checked) {
-            item = obj[i].value;
-            break;
-        }
-    }
-
-    if (item === "mic") {
-        document.getElementById("mic_mode_div").style.display = 'block';
-        document.getElementById("rec_mode_div").style.display = 'none';
-
-
-        btnStart.disabled = true;
-        btnStop.disabled = true;
-        if (btnConnect != null) {
-            btnConnect.disabled = false;
-        }
-        isfilemode = false;
-    } else {
-        document.getElementById("mic_mode_div").style.display = 'none';
-        document.getElementById("rec_mode_div").style.display = 'block';
-
-        btnStart.disabled = true;
-        btnStop.disabled = true;
-        if (btnConnect != null) {
-            btnConnect.disabled = true;
-        }
-        isfilemode = true;
-
-        if (info_div != null) info_div.innerHTML = '请点击选择文件';
-    }
-}
-
 export function getHotwords() {
 
     var obj = document.getElementById("varHot");
@@ -295,27 +239,13 @@ export function getHotwords() {
 }
 
 export function getAsrMode() {
-
-    var item = null;
-    var obj = document.getElementsByName("asr_mode");
-    for (var i = 0; i < obj.length; i++) { //遍历Radio
-        if (obj[i].checked) {
-            item = obj[i].value;
-            break;
-        }
+    let modeVal = null;
+    let configs = localStorage.getItem("request_configs")
+    if (configs != null) {
+        modeVal = JSON.parse(configs)['mode']
     }
-    if (isfilemode) {
-        item = "offline";
-    }
-    console.log("asr mode: " + item);
-
-    if (item === null) {
-        console.log('current at new homepage, get mode from localStorage.')
-        const configs = localStorage.getItem("request_configs")
-        item = configs['mode']
-    }
-
-    return item;
+    console.log('get mode from localStorage:' + modeVal);
+    return modeVal;
 }
 
 function handleWithTimestamp(tmptext, tmptime) {
@@ -378,22 +308,18 @@ function getJsonMessage(jsonMsg) {
         play_file();
         wsconnecter.wsStop();
 
-        if (info_div != null) info_div.innerHTML = "请点击连接";
-
-        btnStart.disabled = true;
-        btnStop.disabled = true;
-        if (btnConnect != null) {
-            btnConnect.disabled = false;
+        if (info_div != null) {
+            info_div.innerHTML = "请点击连接";
         }
+
     }
 }
 
 // 连接状态响应
-let isServerConnected = false;
-
 function getConnState(connState) {
 
-    if (connState === 0) { //on open
+    if (connState === 0) {
+        //on open
         if (info_div != null) {
             info_div.innerHTML = '连接成功!请点击开始';
         }
@@ -403,26 +329,17 @@ function getConnState(connState) {
                 info_div.innerHTML = '请耐心等待,大文件等待时间更长';
             }
             start_file_send();
-        } else {
-            btnStart.disabled = false;
-            btnStop.disabled = true;
-            if (btnConnect != null) {
-                btnConnect.disabled = true;
-            }
         }
 
-        isServerConnected = true;
-
     } else if (connState === 1) {
-        //stop();
+        console.log('connection manually stop');
+        startBtnEnable();
 
     } else if (connState === 2) {
         stop();
+
         console.log('connection error');
 
-        alert("连接地址" + document.getElementById('wssip').value + "失败,请检查asr地址和端口。或试试界面上手动授权，再连接。");
-        btnStart.disabled = true;
-        btnStop.disabled = true;
         if (btnConnect != null) {
             btnConnect.disabled = false;
         }
@@ -430,39 +347,32 @@ function getConnState(connState) {
         if (info_div != null) {
             info_div.innerHTML = '请点击连接';
         }
-
-        isServerConnected = false;
     }
 }
 
-function realStart() {
-    console.log('realStart .... realStart ...')
+function record() {
+    console.log('record ...')
 
     rec.open(function () {
         rec.start();
         console.log("开始");
-        btnStart.disabled = true;
-        btnStop.disabled = false;
-        if (btnConnect != null) {
-            btnConnect.disabled = true;
-        }
+
+        stopBtnEnable()
     });
 }
 
-function record() {
-    console.log("record() is called");
-
-    if (isServerConnected) {
-        realStart()
-    } else {
-        console.log("record() need reconnect server ...");
-        start(getServerUrl(), getRequestConfigs())
-    }
+function stopBtnEnable() {
+    startButton.disabled = true;
+    stopButton.disabled = false;
 }
 
+function startBtnEnable() {
+    startButton.disabled = false;
+    stopButton.disabled = true;
+}
 
 // 识别启动、停止、清空操作
-function start(serverUrl, configs) {
+function start() {
 
     // 清除显示
     clear();
@@ -471,7 +381,7 @@ function start(serverUrl, configs) {
     console.log("isfilemode" + isfilemode);
 
     //启动连接
-    var ret = wsconnecter.wsStart(serverUrl, configs);
+    var ret = wsconnecter.wsStart(getServerUrl(), getRequestConfigs());
 
     // 1 is ok, 0 is error
     if (ret === 1) {
@@ -480,15 +390,6 @@ function start(serverUrl, configs) {
         }
 
         isRec = true;
-        btnStart.disabled = true;
-        btnStop.disabled = true;
-        if (btnConnect != null) {
-            btnConnect.disabled = true;
-        }
-
-        if (serverUrl != null) {
-            realStart()
-        }
 
         return 1;
 
@@ -497,25 +398,23 @@ function start(serverUrl, configs) {
             info_div.innerHTML = "请点击开始";
         }
 
-        btnStart.disabled = true;
-        btnStop.disabled = true;
-        if (btnConnect != null) {
-            btnConnect.disabled = false;
-        }
-
-
         return 0;
     }
 }
 
-
 function stop() {
 
     var chunk_size = [5, 10, 5];
+
     var request = {
-        "chunk_size": chunk_size, "wav_name": "h5", "is_speaking": false, "chunk_interval": 10, "mode": getAsrMode(),
+        "chunk_size": chunk_size,
+        "wav_name": "h5",
+        "is_speaking": false,
+        "chunk_interval": 10,
+        "mode": getAsrMode(),
     };
-    console.log(request);
+
+    console.log("stop request:" + request);
 
     if (sampleBuf.length > 0) {
         wsconnecter.wsSend(sampleBuf);
@@ -532,20 +431,11 @@ function stop() {
     if (info_div != null) info_div.innerHTML = "发送完数据,请等候,正在识别...";
 
     if (isfilemode === false) {
-        btnStop.disabled = true;
-        btnStart.disabled = true;
-        if (btnConnect != null) {
-            btnConnect.disabled = true;
-        }
 
         // wait 3s for asr result
         setTimeout(function () {
-            console.log("call stop ws!");
+            console.log("call stop ws! ...");
             wsconnecter.wsStop();
-
-            //
-            isServerConnected = false
-            //
 
             if (btnConnect != null) {
                 btnConnect.disabled = false;
@@ -554,38 +444,32 @@ function stop() {
             if (info_div != null) {
                 info_div.innerHTML = "请点击连接";
             }
-        }, 3000);
 
+        }, 3000);
 
         rec.stop(function (blob, duration) {
 
             console.log(blob);
-            var audioBlob = Recorder.pcm2wav(
-                {
-                    sampleRate: 16000,
-                    bitRate: 16,
-                    blob: blob
-                },
-                function (theblob, duration) {
-                    console.log(theblob);
-                    var audio_record = document.getElementById('audio_record');
+            var audioBlob = Recorder.pcm2wav({
+                sampleRate: 16000, bitRate: 16, blob: blob
+            }, function (theblob, duration) {
+                console.log(theblob);
+                var audio_record = document.getElementById('audio_record');
 
-                    if (audio_record != null) {
-                        audio_record.src = (window.URL || webkitURL).createObjectURL(theblob);
-                        audio_record.controls = true;
-                        //audio_record.play();
-                    }
-                },
-                function (msg) {
-                    console.log(msg);
-                });
+                if (audio_record != null) {
+                    audio_record.src = (window.URL || webkitURL).createObjectURL(theblob);
+                    audio_record.controls = true;
+                    //audio_record.play();
+                }
+            }, function (msg) {
+                console.log(msg);
+            });
 
         }, function (errMsg) {
             console.log("errMsg: " + errMsg);
         });
     }
     // 停止连接
-
 
 }
 
@@ -600,13 +484,13 @@ function clear() {
 
 function recProcess(buffer, powerLevel, bufferDuration, bufferSampleRate, newBufferIdx, asyncEnd) {
     if (isRec === true) {
-        var data_48k = buffer[buffer.length - 1];
+        const data_48k = buffer[buffer.length - 1];
 
-        var array_48k = new Array(data_48k);
-        var data_16k = Recorder.SampleData(array_48k, bufferSampleRate, 16000).data;
+        const array_48k = new Array(data_48k);
+        const data_16k = Recorder.SampleData(array_48k, bufferSampleRate, 16000).data;
 
         sampleBuf = Int16Array.from([...sampleBuf, ...data_16k]);
-        var chunk_size = 960; // for asr chunk_size [5, 10, 5]
+        const chunk_size = 960; // for asr chunk_size [5, 10, 5]
 
         if (info_div != null) info_div.innerHTML = "" + bufferDuration / 1000 + "s";
 

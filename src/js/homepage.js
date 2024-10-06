@@ -4,7 +4,15 @@
 
 const btn_go_index = document.getElementById('btn_go_index');
 btn_go_index.addEventListener('click', () => {
-    window.location.href = 'index.html';
+
+    const configs = localStorage.getItem("request_configs")
+    if (configs != null) {
+        window.location.href = 'index.html';
+    } else {
+        console.log("no cached configs")
+        alert("请首先到配置页面进行配置")
+    }
+
 })
 
 // settings button

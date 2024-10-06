@@ -5,7 +5,6 @@
 
 /* 2021-2023 by zhaoming,mali aihealthx.com */
 
-
 import {getAsrMode, getHotwords, getUseITN} from "./main.js";
 
 export function WebSocketConnectMethod(config) { //定义socket连接方法类
@@ -19,11 +18,12 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
     var stateHandle = config.stateHandle;
 
     this.wsStart = function (serverUrl, configs) {
+        console.log("wsconnecter this.wsstart configs:" + JSON.stringify(configs));
 
         if (configs == null) {
             const wssipElement = document.getElementById('wssip')
 
-            if(wssipElement == null){
+            if (wssipElement == null) {
                 alert("请点击开始录音进行配置");
                 return 0
             }
@@ -34,7 +34,7 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
                 console.log("Uri" + Uri);
                 serverUrl = Uri
             } else {
-                alert("请检查wss地址正确性");
+                alert("请检查ws地址正确性");
                 return 0;
             }
         }
@@ -51,9 +51,8 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
                 onOpen(e, configs);
             };
             speechSokt.onclose = function (e) {
-                console.log("onclose ws!");
-                // speechSokt.close();
-                onClose(e);
+                console.log("onclose *** ws!");
+                stateHandle(1)
             };
             speechSokt.onmessage = function (e) {
                 onMessage(e);
@@ -61,7 +60,9 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
             speechSokt.onerror = function (e) {
                 onError(e);
             };
+
             return 1;
+
         } else {
             alert('当前浏览器不支持 WebSocket');
             return 0;
@@ -118,12 +119,6 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
         speechSokt.send(request);
         console.log("连接成功");
         stateHandle(0);
-
-        // save configs into localStorage
-        localStorage.setItem("wsserver_url", speechSokt.url)
-        localStorage.setItem("request_configs", request)
-
-        console.log("request_configs saved ...!!")
     }
 
     function onClose(e) {
@@ -131,16 +126,13 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
     }
 
     function onMessage(e) {
-
         msgHandle(e);
     }
 
     function onError(e) {
-
         info_div.innerHTML = "连接" + e;
         console.log(e);
         stateHandle(2);
-
     }
 
 }
