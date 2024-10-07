@@ -25,7 +25,7 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
 
             if (wssipElement == null) {
                 alert("请点击开始录音进行配置");
-                return 0
+                return
             }
 
             //"wss://111.205.137.58:5821/wss/" //设置wss asr online接口地址 如 wss://X.X.X.X:port/wss/
@@ -35,7 +35,7 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
                 serverUrl = Uri
             } else {
                 alert("请检查ws地址正确性");
-                return 0;
+                return
             }
         }
 
@@ -44,15 +44,25 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
 
         if ('WebSocket' in window) {
             // 定义socket连接对象
+            console.log('Trying connect to ASR server with 5s')
+
             speechSokt = new WebSocket(serverUrl);
+
+            const timerId = setTimeout(function () {
+                console.log('== !! timer timeout !! Connection failed!! ==')
+                // stateHandle(2);
+
+                speechSokt.close(3001, "connection failed!!")
+
+            }, 5 * 1000);
 
             // 定义响应函数
             speechSokt.onopen = function (e) {
-                onOpen(e, configs);
+                onOpen(e, configs, timerId);
             };
             speechSokt.onclose = function (e) {
                 console.log("onclose *** ws!");
-                stateHandle(1)
+                // stateHandle(1)
             };
             speechSokt.onmessage = function (e) {
                 onMessage(e);
@@ -61,11 +71,8 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
                 onError(e);
             };
 
-            return 1;
-
         } else {
             alert('当前浏览器不支持 WebSocket');
-            return 0;
         }
     };
 
@@ -73,7 +80,9 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
     this.wsStop = function () {
         if (speechSokt !== undefined) {
             console.log("stop ws!");
-            speechSokt.close();
+
+            if (speechSokt.readyState === 1)
+                speechSokt.close();
         }
     };
 
@@ -85,7 +94,7 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
     };
 
     // SOCKET 连接中的消息与状态响应
-    function onOpen(e, request) {
+    function onOpen(e, request, timerId) {
 
         if (request == null) {
             const chunk_size = [5, 10, 5];
@@ -118,11 +127,14 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
         console.log(request);
         speechSokt.send(request);
         console.log("连接成功");
+
+        console.log('count down timer clear')
+        clearTimeout(timerId)
         stateHandle(0);
     }
 
     function onClose(e) {
-        stateHandle(1);
+
     }
 
     function onMessage(e) {
@@ -130,8 +142,12 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
     }
 
     function onError(e) {
-        info_div.innerHTML = "连接" + e;
+        const info = document.getElementById('info_div');
+        if (info != null) {
+            info.innerHTML = "连接" + e;
+        }
         console.log(e);
+
         stateHandle(2);
     }
 

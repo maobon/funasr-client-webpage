@@ -6,7 +6,6 @@
 import './axios.min.js';
 import {WebSocketConnectMethod} from "./wsconnecter.js";
 
-var isRec = false;
 var sendBuf;
 
 // 连接; 定义socket连接类对象与语音对象
@@ -26,11 +25,7 @@ var sampleBuf = new Int16Array();
 
 // 定义按钮响应事件
 const startButton = document.getElementById('btnStart');
-startButton.onclick = function () {
-    if (start() === 1) {
-        record()
-    }
-};
+startButton.onclick = start
 
 const stopButton = document.getElementById('btnStop');
 stopButton.onclick = stop;
@@ -51,22 +46,16 @@ function getRequestConfigs() {
 const btnConnect = document.getElementById('btnConnect');
 if (btnConnect != null) {
     console.log('current page is original funasr index page')
-    if (start() === 1) {
-        record()
-    }
+    start()
+
 } else {
     console.log('current page is new homepage')
     if (localStorage.getItem('auto') === 'true') {
-        if (start() === 1) {
-            record()
-        }
+        start()
     }
 }
 
 // ... main logic .......
-
-var awsslink = document.getElementById('wsslink');
-
 
 var rec_text = "";  // for online rec asr result
 var offline_text = ""; // for offline rec asr result
@@ -205,12 +194,12 @@ function start_file_send() {
         wsconnecter.wsSend(sendBuf);
     }
 
-    stop();
+    // stop();
 }
 
 export function getHotwords() {
 
-    var obj = document.getElementById("varHot");
+    const obj = document.getElementById("varHot");
 
     if (typeof (obj) == 'undefined' || obj == null || obj.value.length <= 0) {
         return null;
@@ -319,20 +308,24 @@ function getJsonMessage(jsonMsg) {
 function getConnState(connState) {
 
     if (connState === 0) {
-        //on open
+        // on open
         if (info_div != null) {
             info_div.innerHTML = '连接成功!请点击开始';
         }
 
-        if (isfilemode) {
-            if (info_div != null) {
-                info_div.innerHTML = '请耐心等待,大文件等待时间更长';
-            }
-            start_file_send();
-        }
+        record()
+
+        // if (isfilemode) {
+        //     if (info_div != null) {
+        //         info_div.innerHTML = '请耐心等待,大文件等待时间更长';
+        //     }
+        //     start_file_send();
+        // }
 
     } else if (connState === 1) {
         console.log('connection manually stop');
+        // stop();
+
         startBtnEnable();
 
     } else if (connState === 2) {
@@ -347,6 +340,8 @@ function getConnState(connState) {
         if (info_div != null) {
             info_div.innerHTML = '请点击连接';
         }
+
+        disableButtons()
     }
 }
 
@@ -371,35 +366,19 @@ function startBtnEnable() {
     stopButton.disabled = true;
 }
 
+function disableButtons() {
+    startButton.disabled = true;
+    stopButton.disabled = true;
+}
+
 // 识别启动、停止、清空操作
 function start() {
 
     // 清除显示
     clear();
 
-    // 控件状态更新
-    console.log("isfilemode" + isfilemode);
-
     //启动连接
-    var ret = wsconnecter.wsStart(getServerUrl(), getRequestConfigs());
-
-    // 1 is ok, 0 is error
-    if (ret === 1) {
-        if (info_div != null) {
-            info_div.innerHTML = "正在连接asr服务器，请等待...";
-        }
-
-        isRec = true;
-
-        return 1;
-
-    } else {
-        if (info_div != null) {
-            info_div.innerHTML = "请点击开始";
-        }
-
-        return 0;
-    }
+    wsconnecter.wsStart(getServerUrl(), getRequestConfigs());
 }
 
 function stop() {
@@ -414,7 +393,7 @@ function stop() {
         "mode": getAsrMode(),
     };
 
-    console.log("stop request:" + request);
+    console.log("stop request::::" + request);
 
     if (sampleBuf.length > 0) {
         wsconnecter.wsSend(sampleBuf);
@@ -423,10 +402,6 @@ function stop() {
     }
     wsconnecter.wsSend(JSON.stringify(request));
 
-
-    // 控件状态更新
-
-    isRec = false;
 
     if (info_div != null) info_div.innerHTML = "发送完数据,请等候,正在识别...";
 
@@ -483,22 +458,21 @@ function clear() {
 }
 
 function recProcess(buffer, powerLevel, bufferDuration, bufferSampleRate, newBufferIdx, asyncEnd) {
-    if (isRec === true) {
-        const data_48k = buffer[buffer.length - 1];
 
-        const array_48k = new Array(data_48k);
-        const data_16k = Recorder.SampleData(array_48k, bufferSampleRate, 16000).data;
+    const data_48k = buffer[buffer.length - 1];
 
-        sampleBuf = Int16Array.from([...sampleBuf, ...data_16k]);
-        const chunk_size = 960; // for asr chunk_size [5, 10, 5]
+    const array_48k = new Array(data_48k);
+    const data_16k = Recorder.SampleData(array_48k, bufferSampleRate, 16000).data;
 
-        if (info_div != null) info_div.innerHTML = "" + bufferDuration / 1000 + "s";
+    sampleBuf = Int16Array.from([...sampleBuf, ...data_16k]);
+    const chunk_size = 960; // for asr chunk_size [5, 10, 5]
 
-        while (sampleBuf.length >= chunk_size) {
-            sendBuf = sampleBuf.slice(0, chunk_size);
-            sampleBuf = sampleBuf.slice(chunk_size, sampleBuf.length);
-            wsconnecter.wsSend(sendBuf);
-        }
+    if (info_div != null) info_div.innerHTML = "" + bufferDuration / 1000 + "s";
+
+    while (sampleBuf.length >= chunk_size) {
+        sendBuf = sampleBuf.slice(0, chunk_size);
+        sampleBuf = sampleBuf.slice(chunk_size, sampleBuf.length);
+        wsconnecter.wsSend(sendBuf);
     }
 }
 
