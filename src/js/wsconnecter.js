@@ -50,9 +50,9 @@ export function WebSocketConnectMethod(config) { //定义socket连接方法类
 
             const timerId = setTimeout(function () {
                 console.log('== !! timer timeout !! Connection failed!! ==')
-                // stateHandle(2);
 
                 speechSokt.close(3001, "connection failed!!")
+                alert('连接失败-请检查网络连接与ASR服务端是否正确启动')
 
             }, 5 * 1000);
 
