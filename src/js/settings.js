@@ -24,6 +24,15 @@ btnSave.addEventListener("click", (e) => {
 
 })
 
+const udpEnableCheckbox = document.getElementById('cb_udp_enable');
+let udpEnable = localStorage.getItem("udp")
+udpEnableCheckbox.checked = udpEnable === 'true';
+
+udpEnableCheckbox.addEventListener('change', () => {
+    localStorage.setItem("udp", String(udpEnableCheckbox.checked))
+})
+
+
 function getHotwords() {
 
     const obj = document.getElementById("varHot");
@@ -85,18 +94,6 @@ function getUseITN() {
     }
     return false;
 }
-
-// ...
-function connectionHandler(statusCode) {
-    if (statusCode === 0) {
-        console.log("connection test pass")
-    } else if (statusCode === -1) {
-        console.log("connection test failed")
-        alert("connection error! status code: " + statusCode)
-    }
-}
-
-// ...
 
 function WebSocketConnectionTest() {
     //定义socket连接方法类

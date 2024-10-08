@@ -289,8 +289,10 @@ function getJsonMessage(jsonMsg) {
     console.log("offline_text: " + asrmodel + "," + offline_text);
     console.log("rec_text: " + rec_text);
 
-    // send broadcast message
-    sendServerRespMessage(rec_text)
+    if (localStorage.getItem("udp") === 'true') {
+        // send broadcast message
+        sendServerRespMessage(rec_text)
+    }
 
     if (isfilemode && is_final) {
         console.log("call stop ws!");
@@ -300,7 +302,6 @@ function getJsonMessage(jsonMsg) {
         if (info_div != null) {
             info_div.innerHTML = "请点击连接";
         }
-
     }
 }
 
