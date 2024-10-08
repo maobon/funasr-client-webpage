@@ -486,9 +486,12 @@ export function getUseITN() {
     return false;
 }
 
-// send to 9000 port
+// send local UDP broadcast server
 function sendServerRespMessage(message) {
-    const url = 'http://127.0.0.1:1337/post_endpoint';
+
+    const url = "http://" + window.location.host + "/post_endpoint"
+    console.log("udp server URL: ", url)
+
     const postData = {
         "data": message
     };
