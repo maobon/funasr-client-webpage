@@ -4,6 +4,7 @@
 ### Reserved. MIT License  (https://opensource.org/licenses/MIT)
 ###
 ### 2022-2023 by zhaoming,mali aihealthx.com
+import os
 
 from flask import Flask, redirect, jsonify, request
 from broadcast import send_udp_broadcast
@@ -47,6 +48,7 @@ parser.add_argument(
 
 
 if __name__ == "__main__":
+
     args = parser.parse_args()
     port = args.port
 
