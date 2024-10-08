@@ -1,8 +1,8 @@
 import socket
 import json
 
-def send_udp_broadcast(message, port=10000):
 
+def send_udp_broadcast(message, port=10000):
     # address
     broadcast_address = ('<broadcast>', port)
 
@@ -17,7 +17,7 @@ def send_udp_broadcast(message, port=10000):
 
         # data value
         text_data = json_obj['data']
-        print(f"json.data: {text_data}")
+        print(f"broadcast data: {text_data}")
 
         # encoded to UTF-8
         text_bytes = text_data.encode('utf-8')

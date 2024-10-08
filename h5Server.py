@@ -25,7 +25,7 @@ def homepage():
 def post_endpoint():
     data = request.json
     # 处理data，例如存储数据、计算结果等
-    print(f'received data: {data}')
+    print(f'UDP broadcast server received data: {data}')
     send_udp_broadcast(data)
 
     # 返回响应
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     # httpsServer.serve_forever()
 
     # flask
-    print("srv run on ", port)
+    print("srv run on ", args.host)
 
     app.run(
         debug=False,

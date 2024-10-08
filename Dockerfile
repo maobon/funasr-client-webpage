@@ -7,10 +7,10 @@ COPY . .
 
 RUN pip install -r requirements.txt
 
-ARG port
+EXPOSE 10000
 
 ENTRYPOINT ["python", "h5Server.py"]
 
 #                             --name container's name
-#                -p outter:container                         --port python server port
-# docker run -id -p 9000:9000 --name asr_web_client IMAGE_ID --port 9000
+#                -p outter:container                             --port python server port
+# docker run -id -p 9000:9000 -p 10000:10000/udp --name asr_web_client e7230ae69930 --port 9000
