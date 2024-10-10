@@ -276,23 +276,37 @@ function getJsonMessage(jsonMsg) {
     var asrmodel = JSON.parse(jsonMsg.data)['mode'];
     var is_final = JSON.parse(jsonMsg.data)['is_final'];
     var timestamp = JSON.parse(jsonMsg.data)['timestamp'];
-    if (asrmodel === "2pass-offline" || asrmodel === "offline") {
 
-        offline_text = offline_text + handleWithTimestamp(rectxt, timestamp); //rectxt; //.replace(/ +/g,"");
+    if (asrmodel === "2pass-offline" || asrmodel === "offline") {
+        offline_text = offline_text + handleWithTimestamp(rectxt, timestamp);
+        // console.log("offline_text ==> " + offline_text);
+
+        // delete last \n
+        let str = offline_text.slice(0, offline_text.length - 1)
+
+        let broadcast_msg;
+        if (str.indexOf('\n') < 0) {
+            broadcast_msg = str
+        } else {
+            if (countNewLines(str) >= 1) {
+                broadcast_msg = str.slice(str.lastIndexOf('\n'), str.length);
+            }
+        }
+        console.log('broadcast_msg:' + broadcast_msg)
+        if (localStorage.getItem("udp") === 'true') {
+            // send broadcast message
+            sendServerRespMessage(broadcast_msg)
+        }
         rec_text = offline_text;
     } else {
         rec_text = rec_text + rectxt; //.replace(/ +/g,"");
     }
+
     var varArea = document.getElementById('varArea');
     varArea.value = rec_text;
 
     console.log("offline_text: " + asrmodel + "," + offline_text);
     console.log("rec_text: " + rec_text);
-
-    if (localStorage.getItem("udp") === 'true') {
-        // send broadcast message
-        sendServerRespMessage(rec_text)
-    }
 
     if (isfilemode && is_final) {
         console.log("call stop ws!");
@@ -485,6 +499,13 @@ export function getUseITN() {
         }
     }
     return false;
+}
+
+function countNewLines(str) {
+    // 使用正则表达式匹配\n
+    const matches = str.match(/\n/g);
+    // 如果matches不为null，返回匹配到的数量，否则返回0
+    return matches ? matches.length : 0;
 }
 
 // send local UDP broadcast server
